@@ -1,3 +1,11 @@
+function getTime (time){
+    const hour = parseInt(time / 3600);
+    let remainingSec = time % 60;
+    const minute = parseInt(remainingSec / 60);
+    remainingSec = remainingSec % 60; 
+    return `${hour} hr ${minute} min ${remainingSec} Sec ago`
+}
+
 const loadCategories = () => {
     fetch('https://openapi.programming-hero.com/api/phero-tube/categories')
         .then(res => res.json())
@@ -10,23 +18,48 @@ const loadVideos = () => {
         .then(data => displayVideos(data.videos))
         .catch(error => console.log(error))
 }
+const loadCategoryVideos = (id) => {
+
+    fetch(`https://openapi.programming-hero.com/api/phero-tube/category/${id}`)
+        .then(res => res.json())
+        .then(data => displayVideos(data.category))
+        .catch(error => console.log(error))
+}
+
 
 const displayCategories = (categories) => {
     const categoryContainer = document.getElementById('categories')
 
     for (const item of categories) {
 
-        const button = document.createElement('button')
-        button.classList = ('btn')
-        button.innerText = item.category;
-
-        categoryContainer.append(button)
+        const buttonContainer = document.createElement('div')
+        buttonContainer.innerHTML = 
+        `
+        <button onclick="loadCategoryVideos(${item.category_id})" class="btn">${item.category} </button>
+        `
+        categoryContainer.append(buttonContainer)
     }
 }
 
 
 const displayVideos = (videos) => {
     const videoContainer = document.getElementById('videos');
+    videoContainer.innerHTML = "";
+    if(videos.length == 0){
+        videoContainer.classList.remove('grid')
+        videoContainer.innerHTML = 
+        `
+        <div class= "min-h-[300px]  flex flex-col gap-5 justify-center items-center">
+        <img src= "assets/icon.png" />
+        <h2 class="text-xl text-center font-bold">No Content here in this Category</h2>
+        </div>
+        `;
+        return;
+    }
+    else{
+        videoContainer.classList.add('grid')
+    }
+
     for (const video of videos) {
         console.log(video)
         const card = document.createElement('div')
@@ -37,7 +70,7 @@ const displayVideos = (videos) => {
     <img
       src= ${video.thumbnail}
       alt="Shoes" class="h-full w-full object-cover" />
-      <span class ="absolute right-2 bottom-2 bg-black text-white rounded py-1 px-2">${video.others.posted_date}</span>
+      ${video.others.posted_date?.length == 0 ? "" : `<span class ="absolute right-2 bottom-2 bg-[#111111ad] text-white text-sm rounded py-1 px-2">${getTime(video.others.posted_date)}</span>`}
   </figure>
   <div class="px-1 py-3 flex gap-2 items-center">
     <div>
