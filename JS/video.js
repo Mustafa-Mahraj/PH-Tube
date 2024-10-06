@@ -1,9 +1,16 @@
-function getTime (time){
+function getTime(time) {
     const hour = parseInt(time / 3600);
     let remainingSec = time % 60;
     const minute = parseInt(remainingSec / 60);
-    remainingSec = remainingSec % 60; 
+    remainingSec = remainingSec % 60;
     return `${hour} hr ${minute} min ${remainingSec} Sec ago`
+}
+
+const removeActiveClass = () => {
+    const buttons = document.getElementsByClassName('category-btn');
+    for (const button of buttons) {
+        button.classList.remove('active')
+    }
 }
 
 const loadCategories = () => {
@@ -12,8 +19,8 @@ const loadCategories = () => {
         .then(data => displayCategories(data.categories))
         .catch(error => console.log(error))
 }
-const loadVideos = () => {
-    fetch('https://openapi.programming-hero.com/api/phero-tube/videos')
+const loadVideos = (searchText = "") => {
+    fetch(`https://openapi.programming-hero.com/api/phero-tube/videos?title=${searchText}`)
         .then(res => res.json())
         .then(data => displayVideos(data.videos))
         .catch(error => console.log(error))
@@ -30,14 +37,12 @@ const loadCategoryVideos = (id) => {
         })
         .catch(error => console.log(error))
 }
-
-const removeActiveClass = () => {
-    const buttons = document.getElementsByClassName('category-btn');
-    for(const button of buttons){
-        button.classList.remove('active')
-    }
-    
+const loadDetails = async (videoId) => {
+    const res = await fetch(`https://openapi.programming-hero.com/api/phero-tube/video/${videoId}`)
+    const data = await res.json()
+    displayDetails(data.video)
 }
+
 
 // ************** Display Part ***********
 
@@ -47,8 +52,8 @@ const displayCategories = (categories) => {
     for (const item of categories) {
 
         const buttonContainer = document.createElement('div')
-        buttonContainer.innerHTML = 
-        `
+        buttonContainer.innerHTML =
+            `
         <button id="btn-${item.category_id}" onclick="loadCategoryVideos(${item.category_id})" class="btn category-btn">${item.category} </button>
         `
         categoryContainer.append(buttonContainer)
@@ -59,10 +64,10 @@ const displayCategories = (categories) => {
 const displayVideos = (videos) => {
     const videoContainer = document.getElementById('videos');
     videoContainer.innerHTML = "";
-    if(videos.length == 0){
+    if (videos.length == 0) {
         videoContainer.classList.remove('grid')
-        videoContainer.innerHTML = 
-        `
+        videoContainer.innerHTML =
+            `
         <div class= "min-h-[300px]  flex flex-col gap-5 justify-center items-center">
         <img src= "assets/icon.png" />
         <h2 class="text-xl text-center font-bold">No Content here in this Category</h2>
@@ -70,7 +75,7 @@ const displayVideos = (videos) => {
         `;
         return;
     }
-    else{
+    else {
         videoContainer.classList.add('grid')
     }
 
@@ -97,13 +102,30 @@ const displayVideos = (videos) => {
 
        ${video.authors[0].verified === true ? `<img class="w-5" src="https://img.icons8.com/?size=48&id=D9RtvkuOe31p&format=png"/>` : ''}
        </div>
+       <div class="flex gap-12 items-center">
        <p class="text-gray-400">${video.others.views}</p>
+       <button onclick="loadDetails('${video.video_id}')" class="btn btn-sm btn-error mt-1">Details</button>
+       </div>
     </div>
   </div>
        `
         videoContainer.append(card)
     }
 }
+const displayDetails = (details) => {
+    console.log(details)
+    const modalContent = document.getElementById('modal-content');
+    modalContent.innerHTML = 
+    `
+    <img src="${details.thumbnail}" />
+    <p>${details.description}</p>
+    `
 
+    document.getElementById('show-modal-btn').click();
+}
+
+document.getElementById('search-input').addEventListener('keyup', (e) => {
+    loadVideos(e.target.value)
+})
 loadCategories();
 loadVideos();
