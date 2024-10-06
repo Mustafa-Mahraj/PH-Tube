@@ -22,10 +22,24 @@ const loadCategoryVideos = (id) => {
 
     fetch(`https://openapi.programming-hero.com/api/phero-tube/category/${id}`)
         .then(res => res.json())
-        .then(data => displayVideos(data.category))
+        .then(data => {
+            removeActiveClass();
+            const activeBtn = document.getElementById(`btn-${id}`)
+            activeBtn.classList.add('active');
+            displayVideos(data.category);
+        })
         .catch(error => console.log(error))
 }
 
+const removeActiveClass = () => {
+    const buttons = document.getElementsByClassName('category-btn');
+    for(const button of buttons){
+        button.classList.remove('active')
+    }
+    
+}
+
+// ************** Display Part ***********
 
 const displayCategories = (categories) => {
     const categoryContainer = document.getElementById('categories')
@@ -35,7 +49,7 @@ const displayCategories = (categories) => {
         const buttonContainer = document.createElement('div')
         buttonContainer.innerHTML = 
         `
-        <button onclick="loadCategoryVideos(${item.category_id})" class="btn">${item.category} </button>
+        <button id="btn-${item.category_id}" onclick="loadCategoryVideos(${item.category_id})" class="btn category-btn">${item.category} </button>
         `
         categoryContainer.append(buttonContainer)
     }
@@ -61,7 +75,7 @@ const displayVideos = (videos) => {
     }
 
     for (const video of videos) {
-        console.log(video)
+        // console.log(video)
         const card = document.createElement('div')
         card.classList = 'card card-compact'
         card.innerHTML =
